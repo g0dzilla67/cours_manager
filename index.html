@@ -4,380 +4,729 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Performance Tracker</title>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/recharts@2.5.0/dist/Recharts.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        .slider::-webkit-slider-thumb {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            transition: background 0.3s;
+        }
+
+        body.dark {
+            background: #1a202c;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        body.dark .header {
+            background: #2d3748;
+            color: white;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            color: #667eea;
+        }
+
+        body.dark .header h1 {
+            color: #a78bfa;
+        }
+
+        .header p {
+            color: #6b7280;
+            font-size: 0.9em;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .btn-theme {
+            background: #f3f4f6;
+            padding: 12px 16px;
+        }
+
+        body.dark .btn-theme {
+            background: #4b5563;
+            color: white;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            background: white;
+            color: #666;
+            padding: 15px 30px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        body.dark .tab {
+            background: #2d3748;
+            color: #d1d5db;
+        }
+
+        body.dark .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .average-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        body.dark .average-card {
+            background: #2d3748;
+            color: white;
+        }
+
+        .average-score {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .score-value {
+            font-size: 3em;
+            font-weight: bold;
+        }
+
+        .score-value.good { color: #10b981; }
+        .score-value.medium { color: #f59e0b; }
+        .score-value.bad { color: #ef4444; }
+
+        .score-bar {
+            width: 100%;
+            height: 20px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        body.dark .score-bar {
+            background: #4b5563;
+        }
+
+        .score-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .subject-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            transition: transform 0.2s;
+        }
+
+        .subject-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+        }
+
+        body.dark .subject-card {
+            background: #2d3748;
+            color: white;
+        }
+
+        .subject-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .subject-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .subject-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .subject-name {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .subject-score {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .subject-label {
+            font-size: 0.9em;
+            margin-top: 5px;
+            font-weight: 600;
+        }
+
+        .label-excellent { color: #10b981; }
+        .label-good { color: #3b82f6; }
+        .label-medium { color: #f59e0b; }
+        .label-improve { color: #f97316; }
+        .label-bad { color: #ef4444; }
+
+        .slider-container {
+            margin-top: 20px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 12px;
+            border-radius: 6px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
             appearance: none;
             width: 24px;
             height: 24px;
             border-radius: 50%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             transition: transform 0.2s;
         }
-        .slider::-webkit-slider-thumb:hover {
+
+        input[type="range"]::-webkit-slider-thumb:hover {
             transform: scale(1.2);
         }
-        .slider::-moz-range-thumb {
+
+        input[type="range"]::-moz-range-thumb {
             width: 24px;
             height: 24px;
             border-radius: 50%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             border: none;
-            transition: transform 0.2s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
-        .slider::-moz-range-thumb:hover {
-            transform: scale(1.2);
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: #6b7280;
+        }
+
+        body.dark .slider-labels {
+            color: #9ca3af;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        body.dark .chart-container {
+            background: #2d3748;
+            color: white;
+        }
+
+        .chart-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 300px;
+            gap: 10px;
+            padding: 20px 0;
+        }
+
+        .bar-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bar {
+            width: 100%;
+            max-width: 60px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px 10px 0 0;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .bar:hover {
+            transform: scaleY(1.05);
+            opacity: 0.8;
+        }
+
+        .bar-label {
+            font-size: 0.85em;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .bar-value {
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        body.dark .bar-value {
+            color: #a78bfa;
+        }
+
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .badge-card {
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .badge-card.unlocked {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 15px 50px rgba(251, 191, 36, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1.05); }
+            50% { transform: scale(1.08); }
+        }
+
+        .badge-card.locked {
+            background: #f3f4f6;
+            color: #9ca3af;
+            opacity: 0.6;
+        }
+
+        body.dark .badge-card.locked {
+            background: #374151;
+        }
+
+        .badge-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .badge-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .badge-description {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .save-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .header-left {
+                flex-direction: column;
+            }
+
+            .subject-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .bar-chart {
+                height: 250px;
+                padding: 10px 0;
+            }
+
+            .bar-label {
+                font-size: 0.75em;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div id="saveNotification" class="save-notification hidden">
+        💾 Sauvegardé!
+    </div>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-        const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } = Recharts;
-
-        // Icônes Lucide
-        const Brain = lucide.Brain;
-        const Trophy = lucide.Trophy;
-        const TrendingUp = lucide.TrendingUp;
-        const BookOpen = lucide.BookOpen;
-        const Calculator = lucide.Calculator;
-        const Globe = lucide.Globe;
-        const Microscope = lucide.Microscope;
-        const Palette = lucide.Palette;
-        const Music = lucide.Music;
-        const Dumbbell = lucide.Dumbbell;
-        const Code = lucide.Code;
-        const Languages = lucide.Languages;
-        const Sun = lucide.Sun;
-        const Moon = lucide.Moon;
-        const Save = lucide.Save;
-        const RefreshCw = lucide.RefreshCw;
-        const Award = lucide.Award;
-        const Target = lucide.Target;
-        const Zap = lucide.Zap;
-        const Star = lucide.Star;
-
-        function PerformanceTracker() {
-            const [darkMode, setDarkMode] = useState(false);
-            const [activeTab, setActiveTab] = useState('tracker');
-            const [showSaveAnimation, setShowSaveAnimation] = useState(false);
-            
-            const initialSubjects = [
-                { id: 'math', name: 'Mathématiques', icon: Calculator, value: 50, color: 'from-blue-400 to-blue-600', gradient: 'bg-gradient-to-r from-blue-400 to-blue-600' },
-                { id: 'french', name: 'Français', icon: BookOpen, value: 50, color: 'from-purple-400 to-purple-600', gradient: 'bg-gradient-to-r from-purple-400 to-purple-600' },
-                { id: 'english', name: 'Anglais', icon: Languages, value: 50, color: 'from-green-400 to-green-600', gradient: 'bg-gradient-to-r from-green-400 to-green-600' },
-                { id: 'history', name: 'Histoire-Géo', icon: Globe, value: 50, color: 'from-amber-400 to-amber-600', gradient: 'bg-gradient-to-r from-amber-400 to-amber-600' },
-                { id: 'science', name: 'Sciences', icon: Microscope, value: 50, color: 'from-cyan-400 to-cyan-600', gradient: 'bg-gradient-to-r from-cyan-400 to-cyan-600' },
-                { id: 'art', name: 'Arts', icon: Palette, value: 50, color: 'from-pink-400 to-pink-600', gradient: 'bg-gradient-to-r from-pink-400 to-pink-600' },
-                { id: 'music', name: 'Musique', icon: Music, value: 50, color: 'from-indigo-400 to-indigo-600', gradient: 'bg-gradient-to-r from-indigo-400 to-indigo-600' },
-                { id: 'sport', name: 'Sport', icon: Dumbbell, value: 50, color: 'from-red-400 to-red-600', gradient: 'bg-gradient-to-r from-red-400 to-red-600' },
-                { id: 'tech', name: 'Technologie', icon: Code, value: 50, color: 'from-teal-400 to-teal-600', gradient: 'bg-gradient-to-r from-teal-400 to-teal-600' },
-            ];
-
-            const [subjects, setSubjects] = useState(initialSubjects);
-            const [badges, setBadges] = useState([
-                { id: 'perfectionist', name: 'Perfectionniste', description: 'Toutes les matières à 80%+', icon: Trophy, unlocked: false },
-                { id: 'balanced', name: 'Équilibré', description: 'Aucune matière en dessous de 40%', icon: Target, unlocked: false },
-                { id: 'specialist', name: 'Spécialiste', description: 'Une matière à 100%', icon: Star, unlocked: false },
-                { id: 'improver', name: 'En progression', description: 'Moyenne générale > 70%', icon: TrendingUp, unlocked: false },
-            ]);
-
-            useEffect(() => {
-                const saved = localStorage.getItem('performanceData');
-                if (saved) {
-                    setSubjects(JSON.parse(saved));
-                }
-                const savedTheme = localStorage.getItem('darkMode');
-                if (savedTheme) {
-                    setDarkMode(JSON.parse(savedTheme));
-                }
-            }, []);
-
-            useEffect(() => {
-                checkBadges();
-            }, [subjects]);
-
-            const checkBadges = () => {
-                const newBadges = [...badges];
-                newBadges[0].unlocked = subjects.every(s => s.value >= 80);
-                newBadges[1].unlocked = subjects.every(s => s.value >= 40);
-                newBadges[2].unlocked = subjects.some(s => s.value === 100);
-                const average = subjects.reduce((acc, s) => acc + s.value, 0) / subjects.length;
-                newBadges[3].unlocked = average > 70;
-                setBadges(newBadges);
-            };
-
-            const handleSliderChange = (id, value) => {
-                setSubjects(subjects.map(s => s.id === id ? { ...s, value } : s));
-            };
-
-            const saveData = () => {
-                localStorage.setItem('performanceData', JSON.stringify(subjects));
-                localStorage.setItem('darkMode', JSON.stringify(darkMode));
-                setShowSaveAnimation(true);
-                setTimeout(() => setShowSaveAnimation(false), 2000);
-            };
-
-            const resetData = () => {
-                setSubjects(initialSubjects);
-                localStorage.removeItem('performanceData');
-            };
-
-            const getPerformanceLabel = (value) => {
-                if (value >= 90) return { text: 'Excellent! 🌟', color: 'text-green-500' };
-                if (value >= 70) return { text: 'Très bien! 💪', color: 'text-blue-500' };
-                if (value >= 50) return { text: 'Correct 👍', color: 'text-yellow-500' };
-                if (value >= 30) return { text: 'À améliorer 📚', color: 'text-orange-500' };
-                return { text: 'Révisions nécessaires 🎯', color: 'text-red-500' };
-            };
-
-            const getAverageScore = () => {
-                return Math.round(subjects.reduce((acc, s) => acc + s.value, 0) / subjects.length);
-            };
-
-            const chartData = subjects.map(s => ({
-                subject: s.name.substring(0, 4),
-                score: s.value,
-                fullName: s.name
-            }));
-
-            const radarData = subjects.map(s => ({
-                subject: s.name,
-                score: s.value,
-            }));
-
-            const IconComponent = ({ icon: Icon, className }) => {
-                return React.createElement(Icon, { size: className.includes('w-8') ? 32 : className.includes('w-6') ? 24 : 20 });
-            };
-
-            return (
-                <div className={`min-h-screen transition-all duration-500 ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50'}`}>
-                    {showSaveAnimation && (
-                        <div className="fixed top-4 right-4 z-50 animate-pulse">
-                            <div className="bg-green-500 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2">
-                                <IconComponent icon={Save} className="w-5 h-5" />
-                                <span className="font-medium">Sauvegardé!</span>
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="container mx-auto px-4 py-8 max-w-7xl">
-                        <header className="mb-8">
-                            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl shadow-lg">
-                                        <IconComponent icon={Brain} className="w-8 h-8 text-white" />
-                                    </div>
-                                    <div>
-                                        <h1 className={`text-3xl sm:text-4xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                                            Performance Tracker
-                                        </h1>
-                                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Visualise ta progression</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => { setDarkMode(!darkMode); localStorage.setItem('darkMode', JSON.stringify(!darkMode)); }}
-                                        className={`p-3 rounded-xl transition-all ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50'} shadow-lg`}
-                                    >
-                                        {darkMode ? <IconComponent icon={Sun} className="w-5 h-5 text-yellow-400" /> : <IconComponent icon={Moon} className="w-5 h-5 text-gray-600" />}
-                                    </button>
-                                    <button
-                                        onClick={saveData}
-                                        className="px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
-                                    >
-                                        <IconComponent icon={Save} className="w-5 h-5" />
-                                        <span className="hidden sm:inline">Sauvegarder</span>
-                                    </button>
-                                    <button
-                                        onClick={resetData}
-                                        className="px-4 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
-                                    >
-                                        <IconComponent icon={RefreshCw} className="w-5 h-5" />
-                                        <span className="hidden sm:inline">Réinitialiser</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </header>
-
-                        <div className="flex flex-wrap gap-2 mb-6">
-                            {['tracker', 'stats', 'badges'].map((tab) => (
-                                <button
-                                    key={tab}
-                                    onClick={() => setActiveTab(tab)}
-                                    className={`px-6 py-3 rounded-xl font-medium transition-all ${
-                                        activeTab === tab
-                                            ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
-                                            : darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-white text-gray-600 hover:bg-gray-50'
-                                    }`}
-                                >
-                                    {tab === 'tracker' && 'Évaluation'}
-                                    {tab === 'stats' && 'Statistiques'}
-                                    {tab === 'badges' && 'Badges'}
-                                </button>
-                            ))}
-                        </div>
-
-                        {activeTab === 'tracker' && (
-                            <div className="grid gap-4">
-                                <div className={`p-6 rounded-2xl shadow-xl ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Score Moyen</h2>
-                                        <div className="flex items-center gap-2">
-                                            <IconComponent icon={Zap} className="w-6 h-6 text-yellow-500" />
-                                            <span className={`text-3xl font-bold ${getAverageScore() >= 70 ? 'text-green-500' : getAverageScore() >= 50 ? 'text-yellow-500' : 'text-red-500'}`}>
-                                                {getAverageScore()}%
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
-                                        <div
-                                            className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
-                                            style={{ width: `${getAverageScore()}%` }}
-                                        />
-                                    </div>
-                                </div>
-
-                                {subjects.map((subject) => {
-                                    const performance = getPerformanceLabel(subject.value);
-                                    return (
-                                        <div
-                                            key={subject.id}
-                                            className={`p-6 rounded-2xl shadow-xl transition-all hover:shadow-2xl ${darkMode ? 'bg-gray-800' : 'bg-white'}`}
-                                        >
-                                            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                                                <div className="flex items-center gap-3 flex-1">
-                                                    <div className={`p-3 rounded-xl ${subject.gradient} text-white shadow-lg`}>
-                                                        <IconComponent icon={subject.icon} className="w-5 h-5" />
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                                                            {subject.name}
-                                                        </h3>
-                                                        <p className={`text-sm font-medium ${performance.color}`}>
-                                                            {performance.text}
-                                                        </p>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <span className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                                                            {subject.value}%
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="mt-4">
-                                                <input
-                                                    type="range"
-                                                    min="0"
-                                                    max="100"
-                                                    step="5"
-                                                    value={subject.value}
-                                                    onChange={(e) => handleSliderChange(subject.id, parseInt(e.target.value))}
-                                                    className="w-full h-3 rounded-lg appearance-none cursor-pointer slider"
-                                                    style={{
-                                                        background: `linear-gradient(to right, ${subject.color.split(' ')[1]} 0%, ${subject.color.split(' ')[3]} ${subject.value}%, #e5e7eb ${subject.value}%, #e5e7eb 100%)`
-                                                    }}
-                                                />
-                                                <div className="flex justify-between mt-2">
-                                                    <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>À réviser</span>
-                                                    <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Excellent</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-
-                        {activeTab === 'stats' && (
-                            <div className="grid gap-6">
-                                <div className={`p-6 rounded-2xl shadow-xl ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-                                    <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Vue d'ensemble</h2>
-                                    <ResponsiveContainer width="100%" height={300}>
-                                        <BarChart data={chartData}>
-                                            <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#374151' : '#e5e7eb'} />
-                                            <XAxis dataKey="subject" stroke={darkMode ? '#9ca3af' : '#6b7280'} />
-                                            <YAxis stroke={darkMode ? '#9ca3af' : '#6b7280'} />
-                                            <Tooltip
-                                                contentStyle={{
-                                                    backgroundColor: darkMode ? '#1f2937' : '#ffffff',
-                                                    border: 'none',
-                                                    borderRadius: '8px',
-                                                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-                                                }}
-                                                labelFormatter={(value) => chartData.find(d => d.subject === value)?.fullName}
-                                            />
-                                            <Bar dataKey="score" fill="url(#colorGradient)" radius={[8, 8, 0, 0]} />
-                                            <defs>
-                                                <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="0%" stopColor="#a855f7" />
-                                                    <stop offset="100%" stopColor="#ec4899" />
-                                                </linearGradient>
-                                            </defs>
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </div>
-
-                                <div className={`p-6 rounded-2xl shadow-xl ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-                                    <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Radar des compétences</h2>
-                                    <ResponsiveContainer width="100%" height={400}>
-                                        <RadarChart data={radarData}>
-                                            <PolarGrid stroke={darkMode ? '#374151' : '#e5e7eb'} />
-                                            <PolarAngleAxis dataKey="subject" stroke={darkMode ? '#9ca3af' : '#6b7280'} />
-                                            <PolarRadiusAxis angle={90} domain={[0, 100]} stroke={darkMode ? '#9ca3af' : '#6b7280'} />
-                                            <Radar name="Score" dataKey="score" stroke="#a855f7" fill="#a855f7" fillOpacity={0.6} />
-                                        </RadarChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            </div>
-                        )}
-
-                        {activeTab === 'badges' && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                {badges.map((badge) => (
-                                    <div
-                                        key={badge.id}
-                                        className={`p-6 rounded-2xl shadow-xl transition-all ${
-                                            badge.unlocked
-                                                ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-white transform hover:scale-105'
-                                                : darkMode ? 'bg-gray-800 opacity-50' : 'bg-gray-100 opacity-50'
-                                        }`}
-                                    >
-                                        <div className="flex flex-col items-center text-center gap-3">
-                                            <div className={`p-4 rounded-full ${badge.unlocked ? 'bg-white/20' : darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
-                                                <IconComponent icon={badge.icon} className={`w-8 h-8 ${badge.unlocked ? 'text-white' : darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
-                                            </div>
-                                            <h3 className={`font-bold ${badge.unlocked ? 'text-white' : darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                {badge.name}
-                                            </h3>
-                                            <p className={`text-sm ${badge.unlocked ? 'text-white/90' : darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                {badge.description}
-                                            </p>
-                                            {badge.unlocked && (
-                                                <IconComponent icon={Award} className="w-6 h-6 text-white animate-bounce" />
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <div class="logo">🧠</div>
+                <div>
+                    <h1>Performance Tracker</h1>
+                    <p>Visualise ta progression</p>
                 </div>
-            );
+            </div>
+            <div class="buttons">
+                <button class="btn-theme" onclick="toggleTheme()">🌙</button>
+                <button class="btn-save" onclick="saveData()">💾 Sauvegarder</button>
+                <button class="btn-reset" onclick="resetData()">🔄 Réinitialiser</button>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('tracker')">📊 Évaluation</button>
+            <button class="tab" onclick="switchTab('stats')">📈 Statistiques</button>
+            <button class="tab" onclick="switchTab('badges')">🏆 Badges</button>
+        </div>
+
+        <div id="tracker" class="tab-content active">
+            <div class="average-card">
+                <div class="average-score">
+                    <h2>Score Moyen</h2>
+                    <span id="averageScore" class="score-value">50%</span>
+                </div>
+                <div class="score-bar">
+                    <div id="averageFill" class="score-fill" style="width: 50%"></div>
+                </div>
+            </div>
+
+            <div id="subjectsContainer"></div>
+        </div>
+
+        <div id="stats" class="tab-content">
+            <div class="chart-container">
+                <h2 class="chart-title">Vue d'ensemble</h2>
+                <div class="bar-chart" id="barChart"></div>
+            </div>
+        </div>
+
+        <div id="badges" class="tab-content">
+            <div class="badges-grid" id="badgesContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        const subjects = [
+            { id: 'math', name: 'Mathématiques', icon: '🔢', value: 50, gradient: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)' },
+            { id: 'french', name: 'Français', icon: '📚', value: 50, gradient: 'linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)' },
+            { id: 'english', name: 'Anglais', icon: '🌍', value: 50, gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' },
+            { id: 'history', name: 'Histoire-Géo', icon: '🗺️', value: 50, gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' },
+            { id: 'science', name: 'Sciences', icon: '🔬', value: 50, gradient: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)' },
+            { id: 'art', name: 'Arts', icon: '🎨', value: 50, gradient: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)' },
+            { id: 'music', name: 'Musique', icon: '🎵', value: 50, gradient: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' },
+            { id: 'sport', name: 'Sport', icon: '⚽', value: 50, gradient: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' },
+            { id: 'tech', name: 'Technologie', icon: '💻', value: 50, gradient: 'linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)' }
+        ];
+
+        const badges = [
+            { id: 'perfectionist', name: 'Perfectionniste', description: 'Toutes les matières à 80%+', icon: '🏆', unlocked: false },
+            { id: 'balanced', name: 'Équilibré', description: 'Aucune matière en dessous de 40%', icon: '🎯', unlocked: false },
+            { id: 'specialist', name: 'Spécialiste', description: 'Une matière à 100%', icon: '⭐', unlocked: false },
+            { id: 'improver', name: 'En progression', description: 'Moyenne générale > 70%', icon: '📈', unlocked: false }
+        ];
+
+        function loadData() {
+            const saved = localStorage.getItem('performanceData');
+            if (saved) {
+                const savedData = JSON.parse(saved);
+                savedData.forEach((saved, index) => {
+                    subjects[index].value = saved.value;
+                });
+            }
+            const savedTheme = localStorage.getItem('darkMode');
+            if (savedTheme === 'true') {
+                document.body.classList.add('dark');
+            }
         }
 
-        ReactDOM.render(<PerformanceTracker />, document.getElementById('root'));
+        function saveData() {
+            localStorage.setItem('performanceData', JSON.stringify(subjects));
+            localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+            showNotification();
+        }
+
+        function showNotification() {
+            const notification = document.getElementById('saveNotification');
+            notification.classList.remove('hidden');
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 2000);
+        }
+
+        function resetData() {
+            subjects.forEach(subject => subject.value = 50);
+            localStorage.removeItem('performanceData');
+            render();
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+            const btn = document.querySelector('.btn-theme');
+            btn.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            if (tabName === 'stats') renderChart();
+            if (tabName === 'badges') renderBadges();
+        }
+
+        function getPerformanceLabel(value) {
+            if (value >= 90) return { text: 'Excellent! 🌟', className: 'label-excellent' };
+            if (value >= 70) return { text: 'Très bien! 💪', className: 'label-good' };
+            if (value >= 50) return { text: 'Correct 👍', className: 'label-medium' };
+            if (value >= 30) return { text: 'À améliorer 📚', className: 'label-improve' };
+            return { text: 'Révisions nécessaires 🎯', className: 'label-bad' };
+        }
+
+        function getAverageScore() {
+            const sum = subjects.reduce((acc, s) => acc + s.value, 0);
+            return Math.round(sum / subjects.length);
+        }
+
+        function updateSlider(id, value) {
+            const subject = subjects.find(s => s.id === id);
+            subject.value = parseInt(value);
+            render();
+        }
+
+        function renderSubjects() {
+            const container = document.getElementById('subjectsContainer');
+            container.innerHTML = subjects.map(subject => {
+                const label = getPerformanceLabel(subject.value);
+                return `
+                    <div class="subject-card">
+                        <div class="subject-header">
+                            <div class="subject-info">
+                                <div class="subject-icon" style="background: ${subject.gradient}">
+                                    ${subject.icon}
+                                </div>
+                                <div>
+                                    <div class="subject-name">${subject.name}</div>
+                                    <div class="subject-label ${label.className}">${label.text}</div>
+                                </div>
+                            </div>
+                            <div class="subject-score">${subject.value}%</div>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" min="0" max="100" step="5" value="${subject.value}" 
+                                   oninput="updateSlider('${subject.id}', this.value)"
+                                   style="background: linear-gradient(to right, ${subject.gradient.replace('135deg', '90deg')} 0%, ${subject.gradient.replace('135deg', '90deg')} ${subject.value}%, #e5e7eb ${subject.value}%, #e5e7eb 100%)">
+                            <div class="slider-labels">
+                                <span>À réviser</span>
+                                <span>Excellent</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderAverage() {
+            const avg = getAverageScore();
+            const scoreEl = document.getElementById('averageScore');
+            const fillEl = document.getElementById('averageFill');
+            
+            scoreEl.textContent = avg + '%';
+            scoreEl.className = 'score-value ' + (avg >= 70 ? 'good' : avg >= 50 ? 'medium' : 'bad');
+            fillEl.style.width = avg + '%';
+        }
+
+        function renderChart() {
+            const container = document.getElementById('barChart');
+            container.innerHTML = subjects.map(subject => {
+                const height = (subject.value / 100) * 250;
+                return `
+                    <div class="bar-item">
+                        <div class="bar-value">${subject.value}%</div>
+                        <div class="bar" style="height: ${height}px; background: ${subject.gradient}"></div>
+                        <div class="bar-label">${subject.name.substring(0, 6)}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function checkBadges() {
+            badges[0].unlocked = subjects.every(s => s.value >= 80);
+            badges[1].unlocked = subjects.every(s => s.value >= 40);
+            badges[2].unlocked = subjects.some(s => s.value === 100);
+            badges[3].unlocked = getAverageScore() > 70;
+        }
+
+        function renderBadges() {
+            checkBadges();
+            const container = document.getElementById('badgesContainer');
+            container.innerHTML = badges.map(badge => `
+                <div class="badge-card ${badge.unlocked ? 'unlocked' : 'locked'}">
+                    <div class="badge-icon">${badge.icon}</div>
+                    <div class="badge-name">${badge.name}</div>
+                    <div class="badge-description">${badge.description}</div>
+                    ${badge.unlocked ? '<div style="margin-top: 10px; font-size: 1.5em">🎉</div>' : ''}
+                </div>
+            `).join('');
+        }
+
+        function render() {
+            renderSubjects();
+            renderAverage();
+            checkBadges();
+        }
+
+        loadData();
+        render();
     </script>
 </body>
 </html>
